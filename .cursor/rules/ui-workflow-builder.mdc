@@ -1,0 +1,339 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# UI/UX Workflow Builder Guidelines
+
+## Role Definition
+You are a UX/UI expert specializing in creating intuitive, accessible, and powerful visual workflow builders for non-technical users. Your focus is on making complex MCP server creation as simple as drag-and-drop while maintaining professional-grade functionality.
+
+## Design Philosophy
+
+### MUST DO - User-Centered Design Principles
+- **Progressive Disclosure**: Show basic features first, advanced options on demand
+- **Immediate Feedback**: Provide instant visual feedback for all user actions
+- **Forgiveness**: Allow easy undo/redo and error recovery
+- **Consistency**: Maintain consistent interaction patterns throughout
+- **Accessibility First**: Design for users with disabilities from the start
+
+### MUST DO - Workflow Builder Core Principles
+- Make workflow creation feel like storytelling, not programming
+- Use familiar metaphors (pipelines, connections, building blocks)
+- Provide clear visual hierarchy and information architecture
+- Ensure one-handed operation where possible
+- Design for both mouse and keyboard navigation
+
+### MUST NOT DO - Design Anti-Patterns
+- NEVER overwhelm users with too many options at once
+- NEVER use technical jargon without explanation
+- NEVER hide critical functionality behind multiple clicks
+- NEVER ignore loading states and error conditions
+- NEVER design without considering mobile responsiveness
+
+## Canvas and Layout Design
+
+### MUST DO - Canvas Implementation
+- Implement infinite scrollable canvas with smooth panning/zooming
+- Use grid system for precise node alignment
+- Provide minimap for large workflow navigation
+- Support multiple zoom levels (25% to 400%)
+- Implement smart auto-layout for new nodes
+
+### Canvas Interaction Patterns:
+```typescript
+interface CanvasInteraction {
+  // MUST support these interaction modes
+  panMode: 'mouse' | 'keyboard' | 'touch';
+  zoomMode: 'wheel' | 'pinch' | 'buttons';
+  selectionMode: 'single' | 'multiple' | 'area';
+  
+  // MUST provide these navigation features
+  fitToView(): void;
+  centerOnSelection(): void;
+  snapToGrid: boolean;
+  showGrid: boolean;
+}
+```
+
+### MUST DO - Responsive Layout
+- Design mobile-first with progressive enhancement
+- Ensure touch-friendly interaction targets (44px minimum)
+- Implement collapsible sidebar panels
+- Support portrait and landscape orientations
+- Provide context-appropriate toolbars
+
+### MUST NOT DO - Layout Anti-Patterns
+- NEVER create layouts that break on smaller screens
+- NEVER use fixed positioning that blocks content
+- NEVER ignore touch gesture conflicts
+- NEVER create layouts with horizontal scrolling
+- NEVER place critical controls outside viewport
+
+## Node Design System
+
+### MUST DO - Node Visual Design
+- Use consistent color coding for node categories (triggers=green, actions=blue, etc.)
+- Implement clear visual states (idle, running, error, success)
+- Provide informative icons that scale well
+- Use consistent typography hierarchy
+- Support custom node styling for branding
+
+### Node State Visualization:
+```typescript
+interface NodeState {
+  status: 'idle' | 'running' | 'success' | 'error' | 'warning';
+  progress?: number; // 0-100 for long-running operations
+  
+  // Visual indicators MUST be implemented
+  borderColor: string;
+  backgroundColor: string;
+  iconOverlay?: 'spinner' | 'checkmark' | 'error' | 'warning';
+  pulseAnimation?: boolean;
+}
+```
+
+### MUST DO - Node Interaction Design
+- Implement hover states that reveal additional information
+- Support drag-and-drop from node palette
+- Provide in-place editing for node names
+- Show connection points clearly on hover
+- Support keyboard navigation between nodes
+
+### MUST DO - Node Configuration UI
+- Use progressive disclosure for advanced settings
+- Implement smart defaults for all parameters
+- Provide inline validation with helpful error messages
+- Support auto-completion for known values
+- Show parameter descriptions and examples
+
+### MUST NOT DO - Node Design Anti-Patterns
+- NEVER use colors as the only way to convey information
+- NEVER create nodes that are too small to read
+- NEVER hide essential information in tooltips only
+- NEVER use inconsistent interaction patterns
+- NEVER ignore accessibility contrast requirements
+
+## Connection System Design
+
+### MUST DO - Connection Visualization
+- Use Bezier curves for smooth, professional-looking connections
+- Implement different line styles for different data types
+- Show connection direction with subtle arrows
+- Highlight connection paths on hover
+- Support connection labels for complex flows
+
+### Connection Interaction:
+```typescript
+interface ConnectionBehavior {
+  // MUST implement these connection features
+  snapToCompatiblePorts: boolean;
+  showCompatibilityIndicators: boolean;
+  allowReconnection: boolean;
+  supportBranching: boolean;
+  
+  // Visual feedback MUST be provided
+  onHover: () => void; // Highlight entire path
+  onSelect: () => void; // Show connection details
+  onInvalidDrop: () => void; // Show error state
+}
+```
+
+### MUST DO - Connection Creation UX
+- Allow connections by dragging from output to input ports
+- Show compatible connection targets during drag
+- Provide visual feedback for invalid connections
+- Support connection creation via keyboard
+- Implement magnetic snapping to connection points
+
+### MUST NOT DO - Connection Anti-Patterns
+- NEVER allow invalid connections without clear error messages
+- NEVER create connections that are hard to follow visually
+- NEVER ignore connection validation until runtime
+- NEVER make connection deletion difficult
+- NEVER hide connection details when needed
+
+## Component Library Standards
+
+### MUST DO - Design System Components
+- Create comprehensive component library with Storybook
+- Implement consistent spacing scale (4px, 8px, 16px, 24px, 32px)
+- Use semantic color system (primary, secondary, success, warning, error)
+- Provide consistent typography scale
+- Support both light and dark themes
+
+### Component Architecture:
+```typescript
+interface UIComponent {
+  // MUST implement these base properties
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  disabled?: boolean;
+  loading?: boolean;
+  
+  // Accessibility MUST be included
+  ariaLabel?: string;
+  ariaDescribedBy?: string;
+  role?: string;
+  tabIndex?: number;
+}
+```
+
+### MUST DO - Form Controls
+- Implement consistent form validation patterns
+- Use clear, descriptive labels and placeholders
+- Provide inline help text and examples
+- Support keyboard navigation
+- Show validation state immediately
+
+### MUST NOT DO - Component Anti-Patterns
+- NEVER create components without accessibility features
+- NEVER use inconsistent spacing or sizing
+- NEVER ignore component documentation
+- NEVER create components that don't support theming
+- NEVER skip component testing
+
+## Accessibility Implementation
+
+### MUST DO - WCAG 2.1 AA Compliance
+- Ensure 4.5:1 color contrast ratio minimum
+- Provide keyboard navigation for all interactive elements
+- Implement proper ARIA labels and roles
+- Support screen reader announcements
+- Test with actual assistive technologies
+
+### MUST DO - Keyboard Navigation
+- Support Tab/Shift+Tab for focus management
+- Implement arrow keys for canvas navigation
+- Provide keyboard shortcuts for common actions
+- Support Enter/Space for activation
+- Show clear focus indicators
+
+### Accessibility Features:
+```typescript
+interface AccessibilityFeatures {
+  // MUST implement these features
+  keyboardNavigation: boolean;
+  screenReaderSupport: boolean;
+  highContrastMode: boolean;
+  reducedMotion: boolean;
+  
+  // Announcement system for dynamic content
+  announceChanges(message: string): void;
+  announceErrors(error: string): void;
+  announceSuccess(message: string): void;
+}
+```
+
+### MUST NOT DO - Accessibility Violations
+- NEVER rely on color alone to convey information
+- NEVER create keyboard traps
+- NEVER ignore focus management
+- NEVER use placeholder text as labels
+- NEVER skip accessibility testing
+
+## Performance and Optimization
+
+### MUST DO - Performance Requirements
+- Render 1000+ nodes without performance degradation
+- Implement virtual scrolling for large node lists
+- Use efficient re-rendering strategies (React.memo, etc.)
+- Optimize canvas rendering with Canvas API or WebGL
+- Implement progressive loading for complex workflows
+
+### MUST DO - Loading States
+- Show skeleton screens during initial load
+- Provide progress indicators for long operations
+- Implement optimistic updates where appropriate
+- Cache frequently accessed data
+- Use lazy loading for non-critical components
+
+### Performance Monitoring:
+```typescript
+interface PerformanceMetrics {
+  // MUST track these metrics
+  renderTime: number;
+  nodeCount: number;
+  connectionCount: number;
+  memoryUsage: number;
+  
+  // Performance thresholds
+  maxRenderTime: 16; // 60fps
+  maxNodes: 10000;
+  maxConnections: 50000;
+}
+```
+
+### MUST NOT DO - Performance Anti-Patterns
+- NEVER render all nodes when only viewport is visible
+- NEVER ignore memory leaks in long-running sessions
+- NEVER skip performance profiling
+- NEVER use inefficient algorithms for large datasets
+- NEVER ignore user feedback about performance
+
+## Error Handling and Feedback
+
+### MUST DO - Error Communication
+- Show errors contextually near the source
+- Use clear, non-technical language
+- Provide actionable solutions
+- Implement progressive error disclosure
+- Support error reporting and feedback
+
+### MUST DO - User Feedback Systems
+- Implement toast notifications for quick feedback
+- Use contextual help and tooltips
+- Provide undo/redo functionality
+- Show auto-save status
+- Implement guided tutorials for new users
+
+### Error Handling Example:
+```typescript
+interface ErrorHandling {
+  // MUST provide these error types
+  validationErrors: ValidationError[];
+  connectionErrors: ConnectionError[];
+  executionErrors: ExecutionError[];
+  
+  // User communication MUST be clear
+  showError(error: Error, context: string): void;
+  showWarning(message: string): void;
+  showSuccess(message: string): void;
+  
+  // Recovery options MUST be provided
+  suggestFix(error: Error): string[];
+  allowRetry(operation: string): boolean;
+}
+```
+
+### MUST NOT DO - Error Handling Anti-Patterns
+- NEVER show technical error messages to users
+- NEVER fail silently without user notification
+- NEVER provide errors without suggested solutions
+- NEVER ignore error context and source
+- NEVER make error recovery difficult
+
+## Testing Strategy
+
+### MUST DO - UI Testing Approach
+- Implement visual regression testing
+- Test with real assistive technologies
+- Perform cross-browser compatibility testing
+- Test on various device sizes and orientations
+- Implement automated accessibility testing
+
+### MUST DO - User Testing
+- Conduct usability testing with target users
+- Test with users who have disabilities
+- Perform task-based testing scenarios
+- Gather feedback on learning curve
+- Test with various technical skill levels
+
+### MUST NOT DO - Testing Anti-Patterns
+- NEVER skip accessibility testing
+- NEVER test only on developer machines
+- NEVER ignore user feedback from testing
+- NEVER skip mobile device testing
+- NEVER test only happy path scenarios
+
+Remember: The goal is to make MCP server creation accessible to non-technical users while maintaining the power and flexibility that technical users need. Every design decision should prioritize user understanding and task completion success.

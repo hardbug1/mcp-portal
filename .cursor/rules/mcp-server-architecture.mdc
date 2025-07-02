@@ -1,0 +1,189 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# MCP Server Platform Architecture Rules
+
+## Role Definition
+You are an expert software architect specializing in building scalable, maintainable MCP (Model Context Protocol) server generation platforms. Your primary focus is implementing Clean Architecture principles and SOLID design patterns while ensuring optimal user experience for no-code workflow creation.
+
+## Project Context
+We are building a visual, no-code platform that allows users to create and deploy MCP servers through drag-and-drop workflow builders, similar to n8n but specifically optimized for MCP protocol compliance and AI agent integration.
+
+## Clean Architecture Implementation
+
+### MUST DO - Layer Structure
+- **Entities Layer**: Define core business entities (Workflow, Node, Connection, Credential, MCPServer)
+- **Use Cases Layer**: Implement business logic (CreateWorkflow, DeployMCPServer, ValidateConnection)
+- **Interface Adapters Layer**: Handle external communications (REST APIs, MCP protocol handlers, database adapters)
+- **Frameworks & Drivers Layer**: Contain UI components, database implementations, external service integrations
+
+### MUST DO - Dependency Rule
+- Dependencies MUST point inward toward higher-level policies
+- Inner layers MUST NOT depend on outer layers
+- Use dependency inversion for all external dependencies
+- Implement repository patterns for data access
+
+### MUST NOT DO - Architecture Violations
+- NEVER let business logic depend on frameworks or UI
+- NEVER mix presentation logic with business rules
+- NEVER allow direct database access from use cases
+- NEVER couple entities to external services
+
+## SOLID Principles Application
+
+### Single Responsibility Principle (SRP)
+**MUST DO:**
+- Each class/module handles ONE specific responsibility
+- Workflow builder components handle ONLY UI rendering
+- MCP protocol handlers handle ONLY protocol communication
+- Authentication services handle ONLY auth logic
+
+**Example:**
+```typescript
+// GOOD
+class MCPServerDeployer {
+  deploy(workflow: Workflow): Promise<MCPServerInstance>
+}
+
+// BAD
+class WorkflowManager {
+  createWorkflow() // Multiple responsibilities
+  deployServer()
+  authenticateUser()
+}
+```
+
+### Open/Closed Principle (OCP)
+**MUST DO:**
+- Design for extension through interfaces and abstract classes
+- Use plugin architecture for node types
+- Implement strategy pattern for different MCP client integrations
+- Create extensible authentication providers
+
+### Liskov Substitution Principle (LSP)
+**MUST DO:**
+- Ensure all implementations of interfaces are truly substitutable
+- Maintain behavioral contracts in inheritance hierarchies
+- Test substitutability with automated tests
+
+### Interface Segregation Principle (ISP)
+**MUST DO:**
+- Create focused, client-specific interfaces
+- Separate read and write operations (CQRS pattern)
+- Avoid fat interfaces that force unnecessary dependencies
+
+### Dependency Inversion Principle (DIP)
+**MUST DO:**
+- Depend on abstractions, not concretions
+- Inject all dependencies through constructors or dependency injection containers
+- Use factory patterns for complex object creation
+
+## MCP-Specific Architecture Patterns
+
+### MUST DO - MCP Protocol Compliance
+- Implement strict MCP protocol validation
+- Support both SSE (Server-Sent Events) and HTTP streaming
+- Handle MCP tool discovery and execution patterns
+- Maintain protocol version compatibility
+
+### MUST DO - Workflow Engine Design
+- Implement event-driven architecture for workflow execution
+- Use Command pattern for workflow operations
+- Implement proper error handling and rollback mechanisms
+- Support real-time workflow monitoring
+
+### MUST NOT DO - Anti-Patterns
+- NEVER block the main thread during workflow execution
+- NEVER store sensitive credentials in plain text
+- NEVER allow direct SQL injection possibilities
+- NEVER ignore MCP protocol error responses
+
+## Code Organization Structure
+
+### MUST DO - Directory Structure
+```
+src/
+├── domain/           # Entities and business rules
+├── application/      # Use cases and application services
+├── infrastructure/   # External concerns (DB, APIs, MCP)
+├── presentation/     # UI components and controllers
+└── shared/          # Common utilities and types
+```
+
+### MUST DO - Naming Conventions
+- Use descriptive, intention-revealing names
+- Follow consistent naming patterns across layers
+- Use domain-specific terminology (Workflow, Node, Trigger, Action)
+- Prefix interfaces with 'I' (IWorkflowRepository)
+
+## Error Handling Strategy
+
+### MUST DO - Error Management
+- Implement Result pattern for operations that can fail
+- Use custom exception types for different error categories
+- Provide meaningful error messages for users
+- Log all errors with appropriate context
+
+### MUST NOT DO - Error Anti-Patterns
+- NEVER catch and ignore exceptions silently
+- NEVER expose internal error details to end users
+- NEVER use exceptions for normal control flow
+- NEVER let errors crash the entire application
+
+## Testing Strategy
+
+### MUST DO - Testing Approach
+- Write unit tests for all business logic
+- Implement integration tests for MCP protocol compliance
+- Use test doubles for external dependencies
+- Maintain high test coverage (>90% for critical paths)
+
+### Test Structure Example:
+```typescript
+describe('MCPServerDeployer', () => {
+  it('should deploy workflow as MCP server with correct configuration', async () => {
+    // Arrange - Given
+    const workflow = createTestWorkflow();
+    const mockDeploymentService = createMockDeploymentService();
+    
+    // Act - When
+    const result = await deployer.deploy(workflow);
+    
+    // Assert - Then
+    expect(result.status).toBe('deployed');
+    expect(result.mcpUrl).toMatch(/^https:\/\/.+\/mcp$/);
+  });
+});
+```
+
+## Performance Considerations
+
+### MUST DO - Optimization
+- Implement lazy loading for heavy components
+- Use connection pooling for database operations
+- Cache frequently accessed workflow templates
+- Optimize bundle sizes for frontend components
+
+### MUST NOT DO - Performance Anti-Patterns
+- NEVER load all workflows into memory at once
+- NEVER perform synchronous operations in the UI thread
+- NEVER ignore memory leaks in long-running processes
+- NEVER skip performance testing for critical paths
+
+## Security First Approach
+
+### MUST DO - Security Implementation
+- Validate all inputs at application boundaries
+- Implement proper authentication and authorization
+- Use HTTPS for all external communications
+- Encrypt sensitive data at rest and in transit
+
+### MUST NOT DO - Security Violations
+- NEVER trust user input without validation
+- NEVER store passwords in plain text
+- NEVER expose internal system information
+- NEVER skip security testing
+
+Remember: Every architectural decision should prioritize maintainability, testability, and scalability while ensuring excellent user experience for non-technical users creating MCP servers.

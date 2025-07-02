@@ -1,0 +1,164 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# MCP Server Generation Platform - Project Overview
+
+## Project Mission
+We are building a revolutionary no-code platform that democratizes MCP (Model Context Protocol) server creation. Our goal is to make it as easy to create powerful AI agent tools as it is to build a simple website, while maintaining enterprise-grade security, performance, and scalability.
+
+## Core Rule Files Reference
+This project follows comprehensive development guidelines across multiple domains:
+
+- **[Architecture Guidelines](mdc:mcp-server-architecture.mdc)**: Clean Architecture, SOLID principles, and system design patterns
+- **[MCP Development Standards](mdc:mcp-development-guidelines.mdc)**: Protocol compliance, tool development, and MCP-specific best practices  
+- **[UI/UX Guidelines](mdc:ui-workflow-builder.mdc)**: Visual workflow builder design, accessibility, and user experience
+- **[Security & Authentication](mdc:security-and-auth.mdc)**: Comprehensive security implementation and credential management
+- **[Performance & Scalability](mdc:performance-scalability.mdc)**: Optimization strategies and scalability architecture
+
+## Project Vision
+**"Enable anyone to create sophisticated AI agent tools without writing code, while maintaining the power and flexibility that technical users demand."**
+
+### Target Users
+1. **Non-Technical Users**: Business analysts, marketers, operations teams who need AI automation
+2. **Technical Users**: Developers who want rapid prototyping and deployment
+3. **Enterprise Teams**: Organizations requiring secure, scalable AI integration solutions
+
+### Key Differentiators
+- **MCP-First Design**: Built specifically for Model Context Protocol, not adapted from generic workflow tools
+- **AI-Powered Setup**: Natural language configuration and intelligent workflow suggestions
+- **Enterprise Security**: Zero-trust architecture with comprehensive audit trails
+- **Visual Excellence**: Intuitive drag-and-drop interface that feels like storytelling, not programming
+
+## Technical Stack Philosophy
+
+### MUST FOLLOW - Core Principles
+1. **User Experience First**: Every technical decision must improve user experience
+2. **Security by Design**: Security is not optional, it's foundational
+3. **Performance as a Feature**: Speed and responsiveness are core product features
+4. **Accessibility Always**: Design for all users, including those with disabilities
+5. **MCP Compliance**: Strict adherence to Model Context Protocol specifications
+
+### MUST IMPLEMENT - Architecture Patterns
+- Clean Architecture with clear layer separation
+- SOLID principles in all code design
+- Event-driven architecture for workflow execution
+- Microservices for independent scaling
+- Zero-trust security model
+
+### MUST NOT VIOLATE - Fundamental Rules
+- NEVER compromise on security for convenience
+- NEVER sacrifice accessibility for aesthetics  
+- NEVER ignore performance implications
+- NEVER break MCP protocol compliance
+- NEVER implement features without proper testing
+
+## Development Workflow
+
+### Code Quality Standards
+- All code must pass automated security scans
+- 90%+ test coverage for critical paths
+- Performance budgets must be respected
+- Accessibility standards (WCAG 2.1 AA) must be met
+- MCP protocol compliance must be validated
+
+### Review Process
+1. **Security Review**: All changes reviewed for security implications
+2. **Performance Review**: Impact on system performance evaluated
+3. **UX Review**: User experience implications assessed
+4. **Architecture Review**: Alignment with Clean Architecture principles
+5. **MCP Compliance Review**: Protocol adherence validated
+
+## Feature Development Guidelines
+
+### Before Building Any Feature
+1. **User Story Validation**: Clearly define user value and success metrics
+2. **Security Impact Assessment**: Identify and mitigate security risks
+3. **Performance Impact Analysis**: Ensure performance budgets are maintained
+4. **Accessibility Planning**: Design for inclusive user experience
+5. **MCP Protocol Review**: Ensure compliance with protocol specifications
+
+### During Development
+- Follow established patterns from rule files
+- Implement comprehensive error handling
+- Add appropriate monitoring and logging
+- Write tests for all critical functionality
+- Document API endpoints and interfaces
+
+### After Development
+- Conduct security testing
+- Validate performance benchmarks
+- Test accessibility compliance
+- Verify MCP protocol adherence
+- Update documentation
+
+## Success Metrics
+
+### User Experience Metrics
+- **Time to First MCP Server**: < 5 minutes for simple workflows
+- **User Completion Rate**: > 85% for guided setup flows
+- **Support Ticket Volume**: < 2% of monthly active users
+- **User Satisfaction Score**: > 4.5/5.0
+
+### Technical Performance Metrics
+- **Page Load Time**: < 2 seconds
+- **API Response Time**: < 200ms P95
+- **System Uptime**: > 99.9%
+- **Security Incidents**: Zero tolerance for data breaches
+
+### Business Metrics
+- **Monthly Active Users**: Track growth and engagement
+- **MCP Servers Created**: Measure platform adoption
+- **Enterprise Adoption**: Track business customer growth
+- **Developer Ecosystem**: Monitor community contributions
+
+## Quality Gates
+
+### MUST PASS - Before Any Release
+- All security scans pass with zero critical issues
+- Performance tests meet established benchmarks
+- Accessibility tests pass WCAG 2.1 AA compliance
+- MCP protocol compliance tests pass 100%
+- User acceptance testing completes successfully
+
+### MUST MONITOR - Post-Release
+- Real user performance metrics
+- Security event monitoring
+- Error rates and system health
+- User behavior and satisfaction
+- MCP server creation success rates
+
+## Team Collaboration
+
+### Communication Standards
+- Use clear, non-technical language when discussing user features
+- Always consider security implications in technical discussions
+- Document architectural decisions with reasoning
+- Share performance insights across teams
+- Celebrate accessibility improvements
+
+### Knowledge Sharing
+- Regular architecture review sessions
+- Security training and updates
+- Performance optimization workshops
+- UX research sharing
+- MCP protocol evolution discussions
+
+## Innovation Guidelines
+
+### Encouraged Innovation Areas
+- AI-powered workflow suggestions
+- Advanced visual design capabilities
+- Performance optimization techniques
+- Security enhancement features
+- Accessibility improvement tools
+
+### Innovation Constraints
+- Must maintain MCP protocol compliance
+- Cannot compromise security standards
+- Must respect performance budgets
+- Should enhance, not complicate user experience
+- Must align with Clean Architecture principles
+
+Remember: We're not just building software, we're democratizing AI agent creation. Every line of code should serve the mission of making powerful AI tools accessible to everyone while maintaining the highest standards of security, performance, and user experience.

@@ -1,0 +1,367 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Security and Authentication Guidelines
+
+## Role Definition
+You are a cybersecurity expert specializing in secure authentication systems and data protection for cloud-based workflow platforms. Your expertise covers OAuth implementations, credential management, data encryption, and security compliance for MCP server platforms.
+
+## Security-First Architecture
+
+### MUST DO - Security Principles
+- **Zero Trust Architecture**: Never trust, always verify
+- **Defense in Depth**: Implement multiple security layers
+- **Principle of Least Privilege**: Grant minimum necessary permissions
+- **Secure by Default**: All features secure unless explicitly configured otherwise
+- **Privacy by Design**: Build privacy protection into every component
+
+### MUST DO - Threat Modeling
+- Identify and document all potential attack vectors
+- Implement security controls for each identified threat
+- Regularly update threat models as features evolve
+- Consider both technical and social engineering attacks
+- Plan for insider threat scenarios
+
+### MUST NOT DO - Security Anti-Patterns
+- NEVER implement security as an afterthought
+- NEVER trust user input without validation
+- NEVER store sensitive data in plain text
+- NEVER ignore security updates and patches
+- NEVER assume internal networks are secure
+
+## Authentication Implementation
+
+### MUST DO - Multi-Factor Authentication
+- Implement TOTP (Time-based One-Time Password) support
+- Support hardware security keys (WebAuthn/FIDO2)
+- Provide backup authentication methods
+- Enforce MFA for administrative accounts
+- Support SMS backup (with security warnings)
+
+### Authentication Flow Example:
+```typescript
+interface AuthenticationService {
+  // MUST implement these authentication methods
+  authenticateWithPassword(email: string, password: string): Promise<AuthResult>;
+  authenticateWithOAuth(provider: OAuthProvider, code: string): Promise<AuthResult>;
+  authenticateWithMFA(token: string, method: MFAMethod): Promise<AuthResult>;
+  
+  // Session management MUST be secure
+  createSecureSession(userId: string): Promise<SessionToken>;
+  validateSession(token: string): Promise<SessionValidation>;
+  revokeSession(token: string): Promise<void>;
+  
+  // Security monitoring MUST be implemented
+  logSecurityEvent(event: SecurityEvent): void;
+  detectSuspiciousActivity(userId: string): Promise<ThreatAssessment>;
+}
+```
+
+### MUST DO - OAuth 2.0 Implementation
+- Use PKCE (Proof Key for Code Exchange) for all OAuth flows
+- Implement proper state parameter validation
+- Support OpenID Connect for identity verification
+- Validate redirect URIs strictly
+- Implement proper token refresh mechanisms
+
+### MUST DO - Session Management
+- Use cryptographically secure session tokens
+- Implement proper session expiration (15 minutes idle, 8 hours absolute)
+- Support concurrent session limits
+- Implement secure session storage
+- Provide session invalidation capabilities
+
+### MUST NOT DO - Authentication Anti-Patterns
+- NEVER store passwords in plain text or weak hashes
+- NEVER implement custom cryptography
+- NEVER ignore failed authentication attempts
+- NEVER allow unlimited login attempts
+- NEVER store session tokens in localStorage
+
+## Authorization and Access Control
+
+### MUST DO - Role-Based Access Control (RBAC)
+- Implement granular permission system
+- Support role inheritance and composition
+- Provide audit trails for permission changes
+- Implement just-in-time access elevation
+- Support resource-specific permissions
+
+### Permission System Example:
+```typescript
+interface PermissionSystem {
+  // MUST define these permission levels
+  permissions: {
+    workflows: {
+      create: boolean;
+      read: boolean;
+      update: boolean;
+      delete: boolean;
+      execute: boolean;
+      share: boolean;
+    };
+    mcpServers: {
+      deploy: boolean;
+      configure: boolean;
+      monitor: boolean;
+      delete: boolean;
+    };
+    credentials: {
+      create: boolean;
+      use: boolean;
+      manage: boolean;
+    };
+    admin: {
+      userManagement: boolean;
+      systemConfiguration: boolean;
+      auditLogs: boolean;
+    };
+  };
+  
+  // Authorization checks MUST be implemented
+  hasPermission(userId: string, resource: string, action: string): Promise<boolean>;
+  getEffectivePermissions(userId: string): Promise<PermissionSet>;
+  auditPermissionCheck(userId: string, resource: string, action: string, granted: boolean): void;
+}
+```
+
+### MUST DO - API Authorization
+- Implement JWT tokens for API authentication
+- Use short-lived access tokens (15 minutes)
+- Implement proper token refresh mechanisms
+- Validate all API requests for authorization
+- Rate limit API requests per user/IP
+
+### MUST NOT DO - Authorization Anti-Patterns
+- NEVER rely on client-side authorization checks only
+- NEVER expose internal user IDs in URLs or APIs
+- NEVER implement authorization without audit logging
+- NEVER allow privilege escalation without explicit approval
+- NEVER skip authorization checks for "internal" APIs
+
+## Credential Management
+
+### MUST DO - Secure Credential Storage
+- Encrypt all credentials using AES-256-GCM
+- Use separate encryption keys for different credential types
+- Implement key rotation mechanisms
+- Store encryption keys in secure key management systems
+- Never store master keys with encrypted data
+
+### Credential Encryption Example:
+```typescript
+interface CredentialManager {
+  // MUST implement secure storage
+  encryptCredential(credential: Credential, userId: string): Promise<EncryptedCredential>;
+  decryptCredential(encryptedCredential: EncryptedCredential, userId: string): Promise<Credential>;
+  
+  // Key management MUST be secure
+  rotateEncryptionKeys(): Promise<void>;
+  migrateToNewKeys(oldKeyId: string, newKeyId: string): Promise<void>;
+  
+  // Access control MUST be enforced
+  validateCredentialAccess(userId: string, credentialId: string): Promise<boolean>;
+  auditCredentialAccess(userId: string, credentialId: string, action: string): void;
+}
+```
+
+### MUST DO - OAuth Credential Handling
+- Store only necessary OAuth tokens
+- Implement automatic token refresh
+- Encrypt refresh tokens separately from access tokens
+- Monitor for token compromise
+- Implement token revocation procedures
+
+### MUST DO - API Key Management
+- Generate cryptographically secure API keys
+- Implement API key rotation capabilities
+- Provide API key usage monitoring
+- Support API key scoping and restrictions
+- Implement API key expiration
+
+### MUST NOT DO - Credential Anti-Patterns
+- NEVER log credentials in any form
+- NEVER store credentials in configuration files
+- NEVER share credentials between users without explicit permission
+- NEVER allow credentials to be exported in plain text
+- NEVER ignore credential compromise indicators
+
+## Data Protection
+
+### MUST DO - Data Encryption
+- Encrypt all data at rest using AES-256
+- Use TLS 1.3 for all data in transit
+- Implement end-to-end encryption for sensitive workflows
+- Use separate encryption keys per tenant/user
+- Implement secure key derivation functions
+
+### MUST DO - Data Classification
+- Classify all data by sensitivity level (Public, Internal, Confidential, Restricted)
+- Implement appropriate controls for each classification level
+- Label data with classification metadata
+- Enforce data handling policies based on classification
+- Provide data retention and deletion policies
+
+### Data Protection Implementation:
+```typescript
+interface DataProtection {
+  // MUST implement these protection levels
+  classifyData(data: any): DataClassification;
+  encryptSensitiveData(data: any, classification: DataClassification): Promise<EncryptedData>;
+  
+  // Compliance MUST be maintained
+  implementDataRetention(classification: DataClassification): RetentionPolicy;
+  enforceDataDeletion(dataId: string): Promise<DeletionResult>;
+  
+  // Privacy controls MUST be available
+  anonymizeUserData(userId: string): Promise<AnonymizationResult>;
+  exportUserData(userId: string): Promise<DataExport>;
+  deleteUserData(userId: string): Promise<DeletionResult>;
+}
+```
+
+### MUST DO - Privacy Protection
+- Implement GDPR compliance features (right to be forgotten, data portability)
+- Provide privacy controls for user data
+- Implement data anonymization capabilities
+- Support data export requests
+- Maintain privacy audit trails
+
+### MUST NOT DO - Data Protection Anti-Patterns
+- NEVER store personal data without explicit consent
+- NEVER ignore data deletion requests
+- NEVER mix personal and business data without clear separation
+- NEVER implement encryption without proper key management
+- NEVER skip data classification and labeling
+
+## Network Security
+
+### MUST DO - Network Protection
+- Implement Web Application Firewall (WAF)
+- Use Content Security Policy (CSP) headers
+- Implement proper CORS policies
+- Use security headers (HSTS, X-Frame-Options, etc.)
+- Implement DDoS protection
+
+### MUST DO - API Security
+- Implement rate limiting per endpoint and user
+- Use API versioning for security updates
+- Implement request/response validation
+- Monitor for API abuse patterns
+- Implement API gateway for centralized security
+
+### Security Headers Example:
+```typescript
+interface SecurityHeaders {
+  // MUST implement these security headers
+  contentSecurityPolicy: string;
+  strictTransportSecurity: string;
+  xFrameOptions: string;
+  xContentTypeOptions: string;
+  referrerPolicy: string;
+  
+  // API security MUST be enforced
+  rateLimiting: {
+    requestsPerMinute: number;
+    burstLimit: number;
+    blockDuration: number;
+  };
+  
+  // Monitoring MUST be implemented
+  logSecurityViolations(violation: SecurityViolation): void;
+  alertOnSuspiciousActivity(activity: SuspiciousActivity): void;
+}
+```
+
+### MUST NOT DO - Network Security Anti-Patterns
+- NEVER expose internal services to the internet
+- NEVER ignore security headers
+- NEVER allow unlimited API requests
+- NEVER trust client-provided security tokens
+- NEVER skip network monitoring and alerting
+
+## Compliance and Auditing
+
+### MUST DO - Audit Logging
+- Log all authentication attempts (success and failure)
+- Log all authorization decisions
+- Log all data access and modifications
+- Log all administrative actions
+- Implement tamper-proof audit logs
+
+### MUST DO - Compliance Requirements
+- Implement SOC 2 Type II controls
+- Support GDPR compliance features
+- Implement data residency controls
+- Provide compliance reporting capabilities
+- Maintain security documentation
+
+### Audit System Example:
+```typescript
+interface AuditSystem {
+  // MUST log these event types
+  logAuthenticationEvent(event: AuthEvent): void;
+  logAuthorizationEvent(event: AuthzEvent): void;
+  logDataAccessEvent(event: DataAccessEvent): void;
+  logAdminEvent(event: AdminEvent): void;
+  logSecurityEvent(event: SecurityEvent): void;
+  
+  // Compliance reporting MUST be available
+  generateComplianceReport(period: DateRange, standard: ComplianceStandard): Promise<Report>;
+  exportAuditLogs(criteria: AuditCriteria): Promise<AuditExport>;
+  
+  // Integrity MUST be maintained
+  verifyLogIntegrity(): Promise<IntegrityResult>;
+  detectLogTampering(): Promise<TamperingResult>;
+}
+```
+
+### MUST NOT DO - Compliance Anti-Patterns
+- NEVER ignore regulatory requirements
+- NEVER skip audit log implementation
+- NEVER allow audit log tampering
+- NEVER forget to document security procedures
+- NEVER skip compliance testing and validation
+
+## Incident Response
+
+### MUST DO - Security Incident Handling
+- Implement automated threat detection
+- Provide incident response playbooks
+- Support immediate account lockdown procedures
+- Implement security alert escalation
+- Maintain incident response team contacts
+
+### MUST DO - Breach Response
+- Implement breach detection capabilities
+- Provide automated breach notification
+- Support forensic data collection
+- Implement containment procedures
+- Maintain legal and regulatory notification procedures
+
+### MUST NOT DO - Incident Response Anti-Patterns
+- NEVER ignore security alerts
+- NEVER delay incident response
+- NEVER skip forensic evidence preservation
+- NEVER forget to notify affected users
+- NEVER skip post-incident security improvements
+
+## Security Testing
+
+### MUST DO - Security Testing Strategy
+- Implement automated security scanning
+- Perform regular penetration testing
+- Conduct security code reviews
+- Test authentication and authorization systems
+- Validate encryption implementations
+
+### MUST NOT DO - Security Testing Anti-Patterns
+- NEVER skip security testing in CI/CD pipelines
+- NEVER ignore security scan results
+- NEVER test security in production
+- NEVER skip third-party security assessments
+- NEVER forget to test incident response procedures
+
+Remember: Security is not a feature, it's a fundamental requirement. Every system component must be designed and implemented with security as the primary consideration, not an afterthought.

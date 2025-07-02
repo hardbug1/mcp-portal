@@ -1,0 +1,318 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# MCP Development Guidelines
+
+## Role Definition
+You are an expert MCP (Model Context Protocol) developer responsible for creating compliant, secure, and efficient MCP server implementations. Your expertise covers protocol specifications, AI agent integrations, and building user-friendly no-code platforms for MCP server generation.
+
+## MCP Protocol Fundamentals
+
+### MUST DO - Protocol Compliance
+- Follow MCP specification version 1.0+ strictly
+- Implement proper handshake and capability negotiation
+- Support both Server-Sent Events (SSE) and HTTP streaming transports
+- Handle all required MCP message types: `initialize`, `tools/list`, `tools/call`
+- Implement proper error responses with correct status codes
+- Validate all incoming MCP messages against schema
+
+### MUST DO - Message Format Compliance
+```typescript
+// Correct MCP tool response format
+interface MCPToolResponse {
+  content: Array<{
+    type: "text" | "image" | "resource";
+    text?: string;
+    data?: string;
+    mimeType?: string;
+  }>;
+  isError?: boolean;
+}
+
+// MUST include proper error handling
+interface MCPError {
+  code: number;
+  message: string;
+  data?: any;
+}
+```
+
+### MUST NOT DO - Protocol Violations
+- NEVER ignore required MCP message fields
+- NEVER send malformed JSON responses
+- NEVER break the request-response cycle
+- NEVER expose internal errors to MCP clients
+- NEVER implement custom protocol extensions without fallbacks
+
+## Tool Development Standards
+
+### MUST DO - Tool Definition
+- Define clear, descriptive tool names and descriptions
+- Specify comprehensive input schemas with validation rules
+- Provide meaningful examples in tool descriptions
+- Include proper parameter types and constraints
+- Support both required and optional parameters
+
+### Tool Schema Example:
+```typescript
+const toolSchema = {
+  name: "send_email",
+  description: "Send an email through Gmail with attachments support",
+  inputSchema: {
+    type: "object",
+    properties: {
+      to: { 
+        type: "string", 
+        format: "email",
+        description: "Recipient email address" 
+      },
+      subject: { 
+        type: "string", 
+        maxLength: 200,
+        description: "Email subject line" 
+      },
+      body: { 
+        type: "string",
+        description: "Email content in plain text or HTML" 
+      },
+      attachments: {
+        type: "array",
+        items: { type: "string" },
+        description: "Array of file paths to attach"
+      }
+    },
+    required: ["to", "subject", "body"]
+  }
+};
+```
+
+### MUST DO - Tool Implementation
+- Validate all input parameters before execution
+- Implement proper timeout handling (30s default)
+- Return structured, consistent responses
+- Log all tool executions for debugging
+- Handle rate limiting gracefully
+- Provide progress updates for long-running operations
+
+### MUST NOT DO - Tool Anti-Patterns
+- NEVER execute tools without input validation
+- NEVER return unstructured error messages
+- NEVER ignore timeout constraints
+- NEVER expose sensitive information in tool responses
+- NEVER allow tools to modify system configurations
+
+## Authentication & Security
+
+### MUST DO - Authentication Implementation
+- Support multiple auth methods: Bearer tokens, API keys, OAuth 2.0
+- Implement secure credential storage with encryption
+- Use environment variables for sensitive configuration
+- Validate authentication on every request
+- Implement proper session management
+
+### MUST DO - Security Best Practices
+- Sanitize all user inputs to prevent injection attacks
+- Implement rate limiting per client/IP
+- Use HTTPS for all communications
+- Validate file uploads and restrict file types
+- Implement proper CORS policies
+- Log security events for monitoring
+
+### Security Implementation Example:
+```typescript
+class MCPAuthenticator {
+  async validateRequest(request: MCPRequest): Promise<AuthResult> {
+    // MUST validate auth header
+    const authHeader = request.headers.authorization;
+    if (!authHeader) {
+      throw new MCPError(401, "Authentication required");
+    }
+
+    // MUST verify token/credentials
+    const isValid = await this.verifyCredentials(authHeader);
+    if (!isValid) {
+      throw new MCPError(403, "Invalid credentials");
+    }
+
+    return { authenticated: true, userId: extractUserId(authHeader) };
+  }
+}
+```
+
+### MUST NOT DO - Security Violations
+- NEVER store credentials in plain text
+- NEVER skip input validation
+- NEVER expose internal system paths
+- NEVER allow unrestricted file access
+- NEVER log sensitive information
+- NEVER trust client-side validation alone
+
+## Workflow Engine Integration
+
+### MUST DO - Workflow Execution
+- Implement asynchronous workflow execution
+- Support workflow cancellation and timeout
+- Provide real-time execution status updates
+- Handle workflow dependencies and prerequisites
+- Implement proper resource cleanup after execution
+
+### MUST DO - Node Connection Patterns
+- Validate node compatibility before connection
+- Implement type-safe data passing between nodes
+- Support conditional execution paths
+- Handle loop detection and prevention
+- Provide clear execution flow visualization
+
+### Workflow Execution Example:
+```typescript
+class WorkflowExecutor {
+  async executeWorkflow(workflow: Workflow, inputs: any): Promise<ExecutionResult> {
+    // MUST validate workflow before execution
+    const validation = await this.validateWorkflow(workflow);
+    if (!validation.isValid) {
+      throw new MCPError(400, `Invalid workflow: ${validation.errors.join(', ')}`);
+    }
+
+    // MUST provide execution tracking
+    const executionId = generateUniqueId();
+    const execution = new WorkflowExecution(executionId, workflow);
+    
+    try {
+      return await execution.run(inputs);
+    } catch (error) {
+      await this.handleExecutionError(executionId, error);
+      throw error;
+    }
+  }
+}
+```
+
+### MUST NOT DO - Workflow Anti-Patterns
+- NEVER execute workflows without validation
+- NEVER allow infinite loops without detection
+- NEVER ignore execution timeouts
+- NEVER execute workflows with missing dependencies
+- NEVER skip error handling in workflow execution
+
+## Data Management
+
+### MUST DO - Data Handling
+- Implement proper data serialization/deserialization
+- Support multiple data formats (JSON, XML, CSV, binary)
+- Validate data schemas at runtime
+- Implement data transformation utilities
+- Handle large datasets with streaming
+
+### MUST DO - State Management
+- Implement persistent workflow state storage
+- Support workflow pause/resume functionality
+- Handle concurrent workflow executions
+- Implement proper transaction management
+- Provide state rollback capabilities
+
+### MUST NOT DO - Data Anti-Patterns
+- NEVER store sensitive data without encryption
+- NEVER ignore data validation errors
+- NEVER allow data corruption during processing
+- NEVER skip backup procedures for critical data
+- NEVER expose internal data structures to clients
+
+## Error Handling & Monitoring
+
+### MUST DO - Error Management
+- Implement comprehensive error categorization
+- Provide detailed error context for debugging
+- Support error recovery and retry mechanisms
+- Log errors with appropriate severity levels
+- Implement error reporting to monitoring systems
+
+### Error Categories:
+```typescript
+enum MCPErrorType {
+  VALIDATION_ERROR = 'validation_error',
+  AUTHENTICATION_ERROR = 'auth_error',
+  AUTHORIZATION_ERROR = 'authz_error',
+  EXECUTION_ERROR = 'execution_error',
+  NETWORK_ERROR = 'network_error',
+  TIMEOUT_ERROR = 'timeout_error',
+  SYSTEM_ERROR = 'system_error'
+}
+```
+
+### MUST DO - Monitoring Implementation
+- Track MCP server performance metrics
+- Monitor tool execution success rates
+- Implement health check endpoints
+- Track resource usage and limits
+- Provide real-time status dashboards
+
+### MUST NOT DO - Monitoring Anti-Patterns
+- NEVER ignore critical error patterns
+- NEVER skip performance monitoring
+- NEVER expose sensitive data in logs
+- NEVER ignore resource usage alerts
+- NEVER skip health check implementations
+
+## Testing Strategy
+
+### MUST DO - MCP Testing
+- Test MCP protocol compliance with automated tests
+- Implement integration tests with real MCP clients
+- Test all tool implementations with edge cases
+- Validate error handling scenarios
+- Test authentication and authorization flows
+
+### Test Example:
+```typescript
+describe('MCP Tool Execution', () => {
+  it('should execute email tool with valid parameters', async () => {
+    // Given
+    const mcpServer = new MCPServer();
+    const toolRequest = {
+      method: 'tools/call',
+      params: {
+        name: 'send_email',
+        arguments: {
+          to: 'test@example.com',
+          subject: 'Test Subject',
+          body: 'Test Body'
+        }
+      }
+    };
+
+    // When
+    const response = await mcpServer.handleRequest(toolRequest);
+
+    // Then
+    expect(response.result.isError).toBe(false);
+    expect(response.result.content[0].text).toContain('Email sent successfully');
+  });
+});
+```
+
+### MUST NOT DO - Testing Anti-Patterns
+- NEVER skip testing error scenarios
+- NEVER test only happy path scenarios
+- NEVER ignore integration testing
+- NEVER skip performance testing
+- NEVER test with production credentials
+
+## Documentation Standards
+
+### MUST DO - Documentation Requirements
+- Document all MCP tools with examples
+- Provide clear setup and configuration guides
+- Include troubleshooting sections
+- Document API endpoints and schemas
+- Maintain up-to-date changelog
+
+### MUST NOT DO - Documentation Anti-Patterns
+- NEVER leave tools undocumented
+- NEVER provide outdated examples
+- NEVER skip security documentation
+- NEVER ignore user feedback on documentation
+- NEVER document internal implementation details publicly
+
+Remember: MCP compliance is non-negotiable. Every implementation must strictly follow the protocol specification while providing an excellent developer and user experience.

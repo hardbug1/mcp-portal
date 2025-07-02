@@ -1,0 +1,419 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Performance and Scalability Guidelines
+
+## Role Definition
+You are a performance engineering expert specializing in building scalable, high-performance web applications and workflow platforms. Your expertise covers system architecture, database optimization, caching strategies, and performance monitoring for MCP server platforms handling thousands of concurrent users.
+
+## Performance Requirements
+
+### MUST DO - Performance Targets
+- **Page Load Time**: < 2 seconds for initial load, < 500ms for subsequent navigation
+- **API Response Time**: < 200ms for simple operations, < 2 seconds for complex workflows
+- **Workflow Execution**: Support 1000+ concurrent workflow executions
+- **Real-time Updates**: < 100ms latency for UI updates
+- **Throughput**: Handle 10,000+ API requests per minute per server
+
+### MUST DO - Performance Monitoring
+- Implement comprehensive performance metrics collection
+- Monitor Core Web Vitals (LCP, FID, CLS)
+- Track API response times and error rates
+- Monitor database query performance
+- Implement real-user monitoring (RUM)
+
+### Performance Metrics Example:
+```typescript
+interface PerformanceMetrics {
+  // MUST track these core metrics
+  webVitals: {
+    largestContentfulPaint: number; // < 2.5s
+    firstInputDelay: number; // < 100ms
+    cumulativeLayoutShift: number; // < 0.1
+    firstContentfulPaint: number; // < 1.8s
+    timeToInteractive: number; // < 3.8s
+  };
+  
+  apiMetrics: {
+    responseTime: number; // P95 < 200ms
+    errorRate: number; // < 0.1%
+    throughput: number; // requests/second
+    concurrentUsers: number;
+  };
+  
+  systemMetrics: {
+    cpuUsage: number; // < 70%
+    memoryUsage: number; // < 80%
+    diskUsage: number; // < 85%
+    networkLatency: number; // < 50ms
+  };
+}
+```
+
+### MUST NOT DO - Performance Anti-Patterns
+- NEVER ignore performance budgets
+- NEVER load unnecessary resources
+- NEVER block the main thread with heavy operations
+- NEVER ignore memory leaks
+- NEVER skip performance testing before releases
+
+## Frontend Performance Optimization
+
+### MUST DO - Code Splitting and Lazy Loading
+- Implement route-based code splitting
+- Use dynamic imports for heavy components
+- Lazy load workflow nodes and integrations
+- Implement progressive loading for large datasets
+- Use virtual scrolling for large lists
+
+### Code Splitting Example:
+```typescript
+// MUST implement lazy loading for routes
+const WorkflowBuilder = lazy(() => import('./components/WorkflowBuilder'));
+const MCPServerDashboard = lazy(() => import('./components/MCPServerDashboard'));
+
+// MUST implement dynamic imports for node types
+const loadNodeComponent = async (nodeType: string) => {
+  const module = await import(`./nodes/${nodeType}/${nodeType}Component`);
+  return module.default;
+};
+
+// MUST implement virtual scrolling for large lists
+interface VirtualizedListProps {
+  itemCount: number;
+  itemHeight: number;
+  renderItem: (index: number) => ReactNode;
+  overscan?: number; // Default: 5
+}
+```
+
+### MUST DO - Asset Optimization
+- Optimize images with WebP format and responsive sizing
+- Implement tree shaking for unused code elimination
+- Use compression (Gzip/Brotli) for all text assets
+- Implement CDN for static asset delivery
+- Minimize and optimize CSS/JavaScript bundles
+
+### MUST DO - Caching Strategies
+- Implement service worker for offline functionality
+- Use HTTP caching headers appropriately
+- Implement browser caching for static assets
+- Use memory caching for frequently accessed data
+- Implement cache invalidation strategies
+
+### MUST NOT DO - Frontend Anti-Patterns
+- NEVER load all components at application start
+- NEVER ignore bundle size analysis
+- NEVER skip image optimization
+- NEVER ignore render-blocking resources
+- NEVER implement inefficient re-rendering patterns
+
+## Backend Performance Optimization
+
+### MUST DO - Database Optimization
+- Implement proper database indexing strategies
+- Use connection pooling for database connections
+- Implement query optimization and monitoring
+- Use read replicas for read-heavy operations
+- Implement database sharding for large datasets
+
+### Database Performance Example:
+```typescript
+interface DatabaseOptimization {
+  // MUST implement these optimization strategies
+  connectionPool: {
+    minConnections: number; // 5
+    maxConnections: number; // 20
+    idleTimeout: number; // 30000ms
+    acquireTimeout: number; // 10000ms
+  };
+  
+  queryOptimization: {
+    enableQueryLogging: boolean;
+    slowQueryThreshold: number; // 1000ms
+    explainAnalyze: boolean;
+    indexUsageMonitoring: boolean;
+  };
+  
+  caching: {
+    queryResultCache: boolean;
+    cacheTimeout: number; // 300000ms
+    cacheInvalidation: 'manual' | 'automatic';
+  };
+}
+```
+
+### MUST DO - API Performance
+- Implement response compression
+- Use pagination for large datasets
+- Implement API response caching
+- Optimize database queries with proper indexing
+- Use async processing for long-running operations
+
+### MUST DO - Caching Architecture
+- Implement Redis for session and application caching
+- Use CDN for static content delivery
+- Implement application-level caching
+- Use database query result caching
+- Implement cache warming strategies
+
+### MUST NOT DO - Backend Anti-Patterns
+- NEVER execute N+1 database queries
+- NEVER ignore database connection limits
+- NEVER skip query performance analysis
+- NEVER implement blocking operations in request handlers
+- NEVER ignore memory usage in long-running processes
+
+## Scalability Architecture
+
+### MUST DO - Horizontal Scaling
+- Design stateless application architecture
+- Implement load balancing across multiple instances
+- Use microservices for independent scaling
+- Implement auto-scaling based on metrics
+- Design for cloud-native deployment
+
+### Scaling Architecture Example:
+```typescript
+interface ScalabilityArchitecture {
+  // MUST implement these scaling patterns
+  loadBalancing: {
+    algorithm: 'round-robin' | 'least-connections' | 'weighted';
+    healthChecks: boolean;
+    stickySessions: boolean;
+    failoverTimeout: number;
+  };
+  
+  autoScaling: {
+    minInstances: number; // 2
+    maxInstances: number; // 50
+    scaleUpThreshold: number; // 70% CPU
+    scaleDownThreshold: number; // 30% CPU
+    cooldownPeriod: number; // 300s
+  };
+  
+  microservices: {
+    workflowEngine: boolean;
+    mcpServerManager: boolean;
+    credentialService: boolean;
+    notificationService: boolean;
+  };
+}
+```
+
+### MUST DO - Database Scaling
+- Implement read replicas for read-heavy operations
+- Use database sharding for horizontal scaling
+- Implement connection pooling and management
+- Use database clustering for high availability
+- Implement proper backup and recovery strategies
+
+### MUST DO - Caching at Scale
+- Implement distributed caching with Redis Cluster
+- Use cache partitioning strategies
+- Implement cache replication for high availability
+- Design cache invalidation for distributed systems
+- Monitor cache hit rates and performance
+
+### MUST NOT DO - Scalability Anti-Patterns
+- NEVER design single points of failure
+- NEVER ignore data consistency in distributed systems
+- NEVER implement tight coupling between services
+- NEVER ignore network partitioning scenarios
+- NEVER skip capacity planning
+
+## Workflow Engine Performance
+
+### MUST DO - Workflow Execution Optimization
+- Implement parallel execution for independent nodes
+- Use worker queues for heavy processing
+- Implement workflow execution timeouts
+- Use streaming for large data processing
+- Implement execution result caching
+
+### Workflow Performance Example:
+```typescript
+interface WorkflowPerformance {
+  // MUST implement these execution optimizations
+  parallelExecution: {
+    maxConcurrentNodes: number; // 10
+    nodeExecutionTimeout: number; // 30000ms
+    resourceLimits: {
+      memory: string; // '512MB'
+      cpu: string; // '0.5'
+    };
+  };
+  
+  queueManagement: {
+    maxQueueSize: number; // 1000
+    workerCount: number; // 5
+    retryAttempts: number; // 3
+    backoffStrategy: 'exponential' | 'linear';
+  };
+  
+  dataStreaming: {
+    chunkSize: number; // 1024
+    bufferSize: number; // 8192
+    compressionEnabled: boolean;
+  };
+}
+```
+
+### MUST DO - Resource Management
+- Implement memory limits for workflow executions
+- Use CPU throttling for resource-intensive operations
+- Implement disk space monitoring and cleanup
+- Use temporary file cleanup procedures
+- Monitor and limit network usage
+
+### MUST DO - MCP Server Performance
+- Implement connection pooling for MCP clients
+- Use efficient serialization for MCP messages
+- Implement response streaming for large results
+- Monitor MCP server resource usage
+- Implement proper error handling and recovery
+
+### MUST NOT DO - Workflow Anti-Patterns
+- NEVER allow unlimited resource consumption
+- NEVER ignore workflow execution timeouts
+- NEVER implement blocking operations in workflow nodes
+- NEVER skip workflow state persistence
+- NEVER ignore workflow execution monitoring
+
+## Monitoring and Observability
+
+### MUST DO - Application Performance Monitoring (APM)
+- Implement distributed tracing for request flows
+- Monitor application metrics and KPIs
+- Use structured logging for better analysis
+- Implement error tracking and alerting
+- Monitor business metrics alongside technical metrics
+
+### Monitoring Implementation:
+```typescript
+interface MonitoringSystem {
+  // MUST implement these monitoring capabilities
+  metrics: {
+    applicationMetrics: boolean;
+    businessMetrics: boolean;
+    customMetrics: boolean;
+    realTimeAlerts: boolean;
+  };
+  
+  tracing: {
+    distributedTracing: boolean;
+    requestCorrelation: boolean;
+    performanceBreakdown: boolean;
+    errorTracking: boolean;
+  };
+  
+  logging: {
+    structuredLogging: boolean;
+    logAggregation: boolean;
+    logRetention: number; // 30 days
+    logAnalysis: boolean;
+  };
+}
+```
+
+### MUST DO - Performance Alerting
+- Set up alerts for performance threshold breaches
+- Implement escalation procedures for critical issues
+- Monitor SLA compliance and availability
+- Track performance trends over time
+- Implement automated incident response
+
+### MUST DO - Capacity Planning
+- Monitor resource usage trends
+- Predict scaling requirements
+- Plan for traffic spikes and growth
+- Implement load testing procedures
+- Monitor cost optimization opportunities
+
+### MUST NOT DO - Monitoring Anti-Patterns
+- NEVER ignore performance degradation trends
+- NEVER set up alerts without clear action plans
+- NEVER monitor only technical metrics
+- NEVER skip regular performance reviews
+- NEVER ignore user experience metrics
+
+## Performance Testing
+
+### MUST DO - Load Testing Strategy
+- Implement automated performance testing in CI/CD
+- Test with realistic user scenarios and data volumes
+- Perform stress testing to find breaking points
+- Test scalability under various load conditions
+- Validate performance after each major release
+
+### Load Testing Example:
+```typescript
+interface LoadTestingStrategy {
+  // MUST implement these testing scenarios
+  scenarios: {
+    normalLoad: {
+      users: number; // 100
+      duration: string; // '10m'
+      rampUp: string; // '2m'
+    };
+    peakLoad: {
+      users: number; // 500
+      duration: string; // '5m'
+      rampUp: string; // '1m'
+    };
+    stressTest: {
+      users: number; // 1000
+      duration: string; // '15m'
+      rampUp: string; // '5m'
+    };
+  };
+  
+  metrics: {
+    responseTime: number; // P95 < 2s
+    errorRate: number; // < 1%
+    throughput: number; // > 100 RPS
+    resourceUsage: number; // < 80%
+  };
+}
+```
+
+### MUST DO - Performance Regression Testing
+- Establish performance baselines
+- Implement automated performance regression detection
+- Test performance impact of new features
+- Validate optimization improvements
+- Monitor performance in staging environments
+
+### MUST NOT DO - Testing Anti-Patterns
+- NEVER skip performance testing for new features
+- NEVER test only with synthetic data
+- NEVER ignore performance test failures
+- NEVER test only happy path scenarios
+- NEVER skip production-like environment testing
+
+## Optimization Strategies
+
+### MUST DO - Continuous Optimization
+- Regularly profile application performance
+- Implement performance budgets and monitoring
+- Optimize based on real user data
+- Continuously update and improve caching strategies
+- Regular performance reviews and optimization sprints
+
+### MUST DO - Resource Optimization
+- Implement efficient algorithms and data structures
+- Optimize memory usage and garbage collection
+- Use appropriate data compression techniques
+- Implement efficient serialization/deserialization
+- Optimize network communication patterns
+
+### MUST NOT DO - Optimization Anti-Patterns
+- NEVER optimize without measuring first
+- NEVER ignore the 80/20 rule (focus on biggest impacts)
+- NEVER optimize at the expense of code maintainability
+- NEVER skip performance validation after optimization
+- NEVER ignore user experience for micro-optimizations
+
+Remember: Performance is a feature, not an afterthought. Every architectural decision should consider performance implications, and optimization should be data-driven and user-focused.
