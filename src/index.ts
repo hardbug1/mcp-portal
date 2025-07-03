@@ -14,6 +14,7 @@ import workflowRoutes from './routes/workflow.routes.js';
 import nodeRoutes from './routes/node.routes.js';
 import connectionRoutes from './routes/connection.routes.js';
 import credentialRoutes from './routes/credential.routes.js';
+import mcpRoutes from './routes/mcp.routes.js';
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use('/api/credentials', credentialRoutes);
 app.use('/api/workflows', workflowRoutes);
 app.use('/api/nodes', nodeRoutes);
 app.use('/api/workflows', connectionRoutes);
+app.use('/api/mcp', mcpRoutes);
 
 // 404 핸들러
 app.use('*', (req, res) => {
@@ -81,6 +83,7 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`📋 Workflow API: http://localhost:${PORT}/api/workflows`);
     console.log(`🔗 Node API: http://localhost:${PORT}/api/nodes`);
     console.log(`🔌 Connection API: http://localhost:${PORT}/api/workflows/:workflowId/connections`);
+    console.log(`🤖 MCP API: http://localhost:${PORT}/api/mcp`);
   });
 }
 
