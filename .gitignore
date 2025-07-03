@@ -110,3 +110,4 @@ Thumbs.db
 Dockerfile
 docker-compose.yml
 .dockerignore 
+/src/generated/prisma
