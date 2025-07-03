@@ -3,7 +3,47 @@ description:
 globs: 
 alwaysApply: true
 ---
-# MCP Server Generation Platform - Project Overview
+# MCP 서버 생성 플랫폼 - 프로젝트 개요
+
+## 프로젝트 미션
+우리는 MCP(Model Context Protocol) 서버 생성을 민주화하는 혁신적인 노코드 플랫폼을 구축하고 있습니다. 단순한 웹사이트를 만드는 것만큼 쉽게 강력한 AI 에이전트 도구를 만들 수 있도록 하는 것이 목표입니다.
+
+## 핵심 문서
+- **요구사항**: [requirements.md](mdc:docs/requirements.md) - 프로젝트 기본 요구사항
+- **사용자 스토리**: [user-stories.md](mdc:docs/user-stories.md) - 사용자 중심 기능 정의
+- **시스템 설계**: [system-design.md](mdc:docs/system-design.md) - 전체 시스템 아키텍처
+- **데이터베이스 설계**: [database-design.md](mdc:docs/database-design.md) - 데이터 모델 및 스키마
+- **API 설계**: [api-design.md](mdc:docs/api-design.md) - REST API 명세
+- **UI 설계**: [ui-design.md](mdc:docs/ui-design.md) - 사용자 인터페이스 설계
+- **개발 가이드**: [development-guide.md](mdc:docs/development-guide.md) - 개발 표준 및 가이드라인
+- **개발 체크리스트**: [development-checklist.md](mdc:docs/development-checklist.md) - 단계별 개발 작업 목록
+
+## 핵심 기능
+1. **시각적 워크플로우 빌더**: 드래그 앤 드롭으로 MCP 서버 생성
+2. **원클릭 서비스 통합**: 인기 있는 API 및 서비스 자동 연결
+3. **스마트 설정 마법사**: AI 기반 설정 추천 및 자동화
+4. **실시간 배포 및 관리**: 즉시 배포 및 모니터링 도구
+5. **협업 및 공유**: 팀 워크플로우 및 템플릿 공유
+
+## 대상 사용자
+- **비기술자**: 비즈니스 분석가, 마케터, 운영팀
+- **기술자**: 빠른 프로토타이핑이 필요한 개발자
+- **기업팀**: 보안과 확장성이 필요한 조직
+
+## 기술 스택
+- **Frontend**: React, TypeScript, Tailwind CSS
+- **Backend**: Node.js, Express, TypeScript
+- **Database**: PostgreSQL, Prisma ORM
+- **Authentication**: JWT, OAuth 2.0
+- **Deployment**: Docker, Kubernetes
+- **Monitoring**: Prometheus, Grafana
+
+## 개발 원칙
+- 사용자 경험 우선
+- 보안 설계
+- 성능을 기능으로 취급
+- 항상 접근성 고려
+- MCP 프로토콜 준수
 
 ## Project Mission
 We are building a revolutionary no-code platform that democratizes MCP (Model Context Protocol) server creation. Our goal is to make it as easy to create powerful AI agent tools as it is to build a simple website, while maintaining enterprise-grade security, performance, and scalability.
