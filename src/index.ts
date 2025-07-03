@@ -11,6 +11,7 @@ import { apiLimiter } from './middleware/rate-limit.middleware.js';
 import authRoutes from './routes/auth.routes.js';
 import workflowRoutes from './routes/workflow.routes.js';
 import nodeRoutes from './routes/node.routes.js';
+import connectionRoutes from './routes/connection.routes.js';
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/workflows', workflowRoutes);
 app.use('/api/nodes', nodeRoutes);
+app.use('/api/workflows', connectionRoutes);
 
 // 404 핸들러
 app.use('*', (req, res) => {
@@ -72,6 +74,7 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`🔑 Auth API: http://localhost:${PORT}/api/auth`);
     console.log(`📋 Workflow API: http://localhost:${PORT}/api/workflows`);
     console.log(`🔗 Node API: http://localhost:${PORT}/api/nodes`);
+    console.log(`🔌 Connection API: http://localhost:${PORT}/api/workflows/:workflowId/connections`);
   });
 }
 

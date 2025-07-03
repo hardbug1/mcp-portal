@@ -65,7 +65,13 @@
   - [x] 노드 설정 검증 시스템
   - [x] 노드 컨트롤러 및 라우터
   - [x] 노드 검증 미들웨어
-- [ ] 연결 관리 API
+- [x] 연결 관리 API ✅
+  - [x] 연결 타입 정의 (CreateConnectionRequest, ConnectionValidationResult 등)
+  - [x] 연결 서비스 (생성, 수정, 삭제, 검증, 분석)
+  - [x] 연결 컨트롤러 (모든 연결 관리 작업)
+  - [x] 연결 라우터 (/api/workflows/:workflowId/connections)
+  - [x] 연결 검증 시스템 (순환 참조, 중복 연결 등)
+  - [x] 워크플로우 연결 분석 기능
 - [ ] 자격증명 관리 API (암호화)
 - [ ] MCP 서버 배포 API
 
