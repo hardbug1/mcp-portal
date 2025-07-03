@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import { AuthenticatedUser } from './express.js';
 
 export interface LoginRequest {
   email: string;
@@ -12,7 +12,7 @@ export interface RegisterRequest {
 }
 
 export interface AuthResponse {
-  user: Omit<User, 'passwordHash'>;
+  user: AuthenticatedUser;
   token: string;
   refreshToken: string;
 }

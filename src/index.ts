@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import { config } from './config/env.js';
 import { apiLimiter } from './middleware/rate-limit.middleware.js';
 import authRoutes from './routes/auth.routes.js';
+import workflowRoutes from './routes/workflow.routes.js';
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.get('/health', (req, res) => {
 
 // API 라우트
 app.use('/api/auth', authRoutes);
+app.use('/api/workflows', workflowRoutes);
 
 // 404 핸들러
 app.use('*', (req, res) => {
@@ -66,6 +68,7 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`🚀 서버가 포트 ${PORT}에서 실행 중입니다.`);
     console.log(`📊 Health check: http://localhost:${PORT}/health`);
     console.log(`🔑 Auth API: http://localhost:${PORT}/api/auth`);
+    console.log(`📋 Workflow API: http://localhost:${PORT}/api/workflows`);
   });
 }
 

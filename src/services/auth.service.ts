@@ -2,6 +2,7 @@ import { User } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { hashPassword, comparePassword, validatePassword } from '../utils/password.js';
 import { generateTokens, generatePasswordResetToken, verifyPasswordResetToken } from '../utils/jwt.js';
+import { AuthenticatedUser } from '../types/express.js';
 import { 
   LoginRequest, 
   RegisterRequest, 
@@ -295,7 +296,7 @@ export class AuthService {
     });
   }
 
-  async getUserById(userId: string): Promise<Omit<User, 'passwordHash'> | null> {
+  async getUserById(userId: string): Promise<AuthenticatedUser | null> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
@@ -303,8 +304,15 @@ export class AuthService {
     return user ? this.sanitizeUser(user) : null;
   }
 
-  private sanitizeUser(user: User): Omit<User, 'passwordHash'> {
-    const { passwordHash, ...sanitizedUser } = user;
-    return sanitizedUser;
+  private sanitizeUser(user: User): AuthenticatedUser {
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      avatarUrl: user.avatarUrl,
+      emailVerified: user.emailVerified,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 } 
