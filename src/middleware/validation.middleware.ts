@@ -266,4 +266,124 @@ export const validateDuplicateWorkflow = [
     .trim()
     .isLength({ min: 1, max: 100 })
     .withMessage('워크플로우 이름은 1-100자 사이여야 합니다.'),
+];
+
+// 노드 관련 검증
+export const validateCreateNode = [
+  body('workflowId')
+    .isString()
+    .notEmpty()
+    .withMessage('워크플로우 ID가 필요합니다.'),
+  body('templateId')
+    .isString()
+    .notEmpty()
+    .withMessage('노드 템플릿 ID가 필요합니다.'),
+  body('name')
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('노드 이름은 1-100자 사이여야 합니다.'),
+  body('position')
+    .isObject()
+    .withMessage('노드 위치는 객체 형태여야 합니다.')
+    .custom((position) => {
+      if (!position || typeof position.x !== 'number' || typeof position.y !== 'number') {
+        throw new Error('노드 위치는 x, y 좌표를 포함해야 합니다.');
+      }
+      return true;
+    }),
+  body('config')
+    .optional()
+    .isObject()
+    .withMessage('노드 설정은 객체 형태여야 합니다.'),
+];
+
+export const validateUpdateNode = [
+  param('workflowId')
+    .isString()
+    .notEmpty()
+    .withMessage('워크플로우 ID가 필요합니다.'),
+  param('nodeId')
+    .isString()
+    .notEmpty()
+    .withMessage('노드 ID가 필요합니다.'),
+  body('name')
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('노드 이름은 1-100자 사이여야 합니다.'),
+  body('position')
+    .optional()
+    .isObject()
+    .withMessage('노드 위치는 객체 형태여야 합니다.')
+    .custom((position) => {
+      if (position && (typeof position.x !== 'number' || typeof position.y !== 'number')) {
+        throw new Error('노드 위치는 x, y 좌표를 포함해야 합니다.');
+      }
+      return true;
+    }),
+  body('config')
+    .optional()
+    .isObject()
+    .withMessage('노드 설정은 객체 형태여야 합니다.'),
+];
+
+export const validateNodeParams = [
+  param('workflowId')
+    .isString()
+    .notEmpty()
+    .withMessage('워크플로우 ID가 필요합니다.'),
+  param('nodeId')
+    .isString()
+    .notEmpty()
+    .withMessage('노드 ID가 필요합니다.'),
+];
+
+export const validateTemplateId = [
+  param('templateId')
+    .isString()
+    .notEmpty()
+    .withMessage('템플릿 ID가 필요합니다.'),
+];
+
+export const validateNodeTemplateQuery = [
+  query('category')
+    .optional()
+    .isString()
+    .withMessage('카테고리는 문자열이어야 합니다.'),
+  query('type')
+    .optional()
+    .isString()
+    .withMessage('타입은 문자열이어야 합니다.'),
+  query('search')
+    .optional()
+    .isString()
+    .isLength({ max: 100 })
+    .withMessage('검색어는 최대 100자까지 가능합니다.'),
+  query('tags')
+    .optional()
+    .isString()
+    .withMessage('태그는 쉼표로 구분된 문자열이어야 합니다.'),
+  query('includeDeprecated')
+    .optional()
+    .isBoolean()
+    .withMessage('includeDeprecated는 불린값이어야 합니다.'),
+  query('page')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('페이지는 1 이상의 정수여야 합니다.'),
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: 100 })
+    .withMessage('제한 수는 1-100 사이의 정수여야 합니다.'),
+];
+
+export const validateNodeConfig = [
+  param('templateId')
+    .isString()
+    .notEmpty()
+    .withMessage('템플릿 ID가 필요합니다.'),
+  body('config')
+    .isObject()
+    .withMessage('노드 설정은 객체 형태여야 합니다.'),
 ]; 

@@ -20,6 +20,13 @@ export interface WorkflowNode {
   position: { x: number; y: number };
 }
 
+export interface PortDefinition {
+  name: string;
+  type: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'any';
+  description: string;
+  required: boolean;
+}
+
 export interface WorkflowConnection {
   id: string;
   sourceNodeId: string;
