@@ -3,3 +3,60 @@ description:
 globs:
 alwaysApply: false
 ---
+# 데이터베이스 스키마 가이드
+
+## Prisma 설정
+데이터베이스는 PostgreSQL과 Prisma ORM을 사용합니다.
+
+### 핵심 파일들
+- **[prisma/schema.prisma](mdc:prisma/schema.prisma)**: 전체 데이터베이스 스키마
+- **[prisma/seed.ts](mdc:prisma/seed.ts)**: 초기 데이터 시드
+- **[src/config/database.ts](mdc:src/config/database.ts)**: Prisma 클라이언트 설정
+
+## 주요 모델들
+
+### User (사용자)
+- 인증 정보 (email, passwordHash, refreshToken)
+- OAuth 지원 (oauthProvider, oauthId)
+- 프로필 정보 (name, avatarUrl, timezone, locale)
+- 보안 필드 (emailVerified, mfaEnabled)
+
+### Workspace (워크스페이스)
+- 팀 협업을 위한 워크스페이스
+- 플랜 타입 및 제한사항 관리
+- 소유자 및 멤버 관계
+
+### Workflow (워크플로우)
+- MCP 서버 정의
+- JSON 형태의 워크플로우 정의
+- 실행 통계 및 버전 관리
+
+### Integration (통합)
+- 외부 서비스 연동
+- 암호화된 자격증명 저장
+- 테스트 결과 및 상태 관리
+
+### Deployment (배포)
+- MCP 서버 배포 정보
+- 헬스체크 및 모니터링
+- 환경별 설정 관리
+
+## 스크립트
+```bash
+npm run db:generate    # Prisma 클라이언트 생성
+npm run db:migrate     # 마이그레이션 실행
+npm run db:push        # 스키마 푸시 (개발용)
+npm run db:seed        # 시드 데이터 실행
+npm run db:studio      # Prisma Studio 실행
+```
+
+## 관계 설정
+- User ↔ Workspace (다대다, WorkspaceUser 중간 테이블)
+- Workspace → Workflow (일대다)
+- Workflow → Deployment (일대다)
+- Workflow → Execution (일대다)
+
+## 데이터 암호화
+- 사용자 비밀번호: bcrypt 해싱
+- 통합 자격증명: JSON 필드에 암호화 저장
+- API 키: 해시된 형태로 저장

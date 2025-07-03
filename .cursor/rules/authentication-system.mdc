@@ -3,3 +3,53 @@ description:
 globs:
 alwaysApply: false
 ---
+# 인증 및 권한 시스템 가이드
+
+## 시스템 개요
+JWT 기반 인증 시스템이 완전히 구현되어 있습니다. 모든 인증 관련 코드는 보안 우선으로 설계되었습니다.
+
+## 핵심 파일들
+
+### 인증 서비스
+- **[src/services/auth.service.ts](mdc:src/services/auth.service.ts)**: 핵심 인증 비즈니스 로직
+  - 사용자 등록/로그인/로그아웃
+  - 비밀번호 재설정
+  - OAuth 통합 준비
+
+### 미들웨어
+- **[src/middleware/auth.middleware.ts](mdc:src/middleware/auth.middleware.ts)**: JWT 토큰 검증
+- **[src/middleware/validation.middleware.ts](mdc:src/middleware/validation.middleware.ts)**: 입력 데이터 검증
+- **[src/middleware/rate-limit.middleware.ts](mdc:src/middleware/rate-limit.middleware.ts)**: API 요청 제한
+
+### 유틸리티
+- **[src/utils/jwt.ts](mdc:src/utils/jwt.ts)**: JWT 토큰 생성/검증
+- **[src/utils/password.ts](mdc:src/utils/password.ts)**: 비밀번호 해싱/검증
+
+### 타입 정의
+- **[src/types/auth.ts](mdc:src/types/auth.ts)**: 인증 관련 TypeScript 타입
+- **[src/types/express.ts](mdc:src/types/express.ts)**: Express Request 확장
+
+## API 엔드포인트
+```
+POST /api/auth/register    # 회원가입
+POST /api/auth/login       # 로그인
+POST /api/auth/logout      # 로그아웃
+GET  /api/auth/profile     # 프로필 조회
+```
+
+## 보안 기능
+- bcrypt 비밀번호 해싱 (12 rounds)
+- JWT 액세스/리프레시 토큰
+- Rate limiting (로그인 시도 제한)
+- 입력 데이터 검증 및 새니타이제이션
+- CORS 및 보안 헤더 설정
+
+## 사용법
+새로운 보호된 라우트를 만들 때:
+```typescript
+import { authenticateToken } from '../middleware/auth.middleware.js';
+router.get('/protected', authenticateToken, controller.method);
+```
+
+## 환경 변수
+필요한 환경 변수는 [.env.example](mdc:.env.example)에 정의되어 있습니다.

@@ -9,9 +9,11 @@ import helmet from 'helmet';
 import { config } from './config/env.js';
 import { apiLimiter } from './middleware/rate-limit.middleware.js';
 import authRoutes from './routes/auth.routes.js';
+import userRoutes from './routes/user.routes.js';
 import workflowRoutes from './routes/workflow.routes.js';
 import nodeRoutes from './routes/node.routes.js';
 import connectionRoutes from './routes/connection.routes.js';
+import credentialRoutes from './routes/credential.routes.js';
 
 const app = express();
 
@@ -44,6 +46,8 @@ app.get('/health', (req, res) => {
 
 // API 라우트
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/credentials', credentialRoutes);
 app.use('/api/workflows', workflowRoutes);
 app.use('/api/nodes', nodeRoutes);
 app.use('/api/workflows', connectionRoutes);
@@ -72,6 +76,8 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`🚀 서버가 포트 ${PORT}에서 실행 중입니다.`);
     console.log(`📊 Health check: http://localhost:${PORT}/health`);
     console.log(`🔑 Auth API: http://localhost:${PORT}/api/auth`);
+    console.log(`👤 User API: http://localhost:${PORT}/api/users`);
+    console.log(`🔐 Credential API: http://localhost:${PORT}/api/credentials`);
     console.log(`📋 Workflow API: http://localhost:${PORT}/api/workflows`);
     console.log(`🔗 Node API: http://localhost:${PORT}/api/nodes`);
     console.log(`🔌 Connection API: http://localhost:${PORT}/api/workflows/:workflowId/connections`);

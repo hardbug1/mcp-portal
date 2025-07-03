@@ -3,3 +3,93 @@ description:
 globs:
 alwaysApply: false
 ---
+# API 개발 패턴 가이드
+
+## REST API 설계 원칙
+이 프로젝트는 RESTful API 설계 원칙을 따릅니다.
+
+## 기존 API 구조 (인증 시스템)
+인증 API는 이미 완전히 구현되어 있으며, 다른 API 개발 시 참고 패턴으로 사용하세요.
+
+### 참고 파일들
+- **컨트롤러**: [src/controllers/auth.controller.ts](mdc:src/controllers/auth.controller.ts)
+- **서비스**: [src/services/auth.service.ts](mdc:src/services/auth.service.ts)
+- **라우터**: [src/routes/auth.routes.ts](mdc:src/routes/auth.routes.ts)
+- **미들웨어**: [src/middleware/validation.middleware.ts](mdc:src/middleware/validation.middleware.ts)
+
+## API 응답 형식
+```typescript
+// 성공 응답
+{
+  message: string;
+  data?: any;
+}
+
+// 에러 응답
+{
+  error: string;
+  details?: any;
+}
+```
+
+## 컨트롤러 패턴
+```typescript
+export class ExampleController {
+  async create(req: Request, res: Response): Promise<void> {
+    try {
+      const data = req.body;
+      const result = await this.service.create(data);
+      
+      res.status(201).json({
+        message: '생성되었습니다.',
+        data: result,
+      });
+    } catch (error) {
+      res.status(400).json({
+        error: error instanceof Error ? error.message : '생성에 실패했습니다.',
+      });
+    }
+  }
+}
+```
+
+## 서비스 패턴
+```typescript
+export class ExampleService {
+  async create(data: CreateRequest): Promise<ExampleResponse> {
+    // 1. 입력 검증
+    // 2. 비즈니스 로직 실행
+    // 3. 데이터베이스 작업
+    // 4. 결과 반환
+  }
+}
+```
+
+## 미들웨어 사용
+```typescript
+// 인증 필요한 라우트
+router.post('/protected', authenticateToken, controller.method);
+
+// 입력 검증
+router.post('/create', validation, controller.create);
+
+// Rate limiting
+router.post('/sensitive', rateLimiter, controller.method);
+```
+
+## 에러 처리 패턴
+- 서비스에서 의미 있는 에러 메시지 throw
+- 컨트롤러에서 적절한 HTTP 상태 코드 반환
+- 전역 에러 핸들러가 예상치 못한 에러 처리
+
+## 다음 구현할 API들
+1. **워크플로우 API** (`/api/workflows`)
+2. **노드 API** (`/api/nodes`)
+3. **통합 API** (`/api/integrations`)
+4. **배포 API** (`/api/deployments`)
+
+## 보안 고려사항
+- 모든 API에 적절한 인증/권한 체크
+- 입력 데이터 검증 및 새니타이제이션
+- Rate limiting 적용
+- CORS 정책 준수
