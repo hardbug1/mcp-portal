@@ -4,6 +4,54 @@
 
 본 문서는 MCP 서버 생성 플랫폼의 UI/UX 디자인 가이드와 와이어프레임을 정의합니다. 사용자 친화적이고 직관적인 인터페이스를 통해 비개발자도 쉽게 MCP 서버를 생성할 수 있도록 설계되었습니다.
 
+## 🔧 Tailwind CSS v4 설정 (Context7 분석 기반)
+
+### 최적화된 설정 구조
+
+프로젝트는 Context7 분석을 통해 검증된 Tailwind CSS v4 최신 설정을 사용합니다:
+
+```typescript
+// vite.config.ts - 최적화된 Vite 플러그인 사용
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss() // PostCSS 대신 전용 Vite 플러그인 사용
+  ]
+})
+```
+
+```css
+/* src/index.css - v4 호환 CSS 구조 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #e0e7ff 100%);
+    background-attachment: fixed;
+    color: #0f172a;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+```
+
+### 핵심 개선사항
+
+1. **성능 향상**: Vite 전용 플러그인으로 빌드 속도 개선
+2. **코드 품질**: `prettier-plugin-tailwindcss`로 클래스 자동 정렬
+3. **의존성 최적화**: 불필요한 `@tailwindcss/line-clamp` 제거 (v3.3+에서 코어 통합)
+4. **최신 표준**: Tailwind v4 권장 설정 완전 적용
+
 ## 🎨 디자인 시스템
 
 ### 컬러 팔레트

@@ -1,68 +1,58 @@
-import { apiClient } from './api';
-import { AuthResponse, LoginRequest, RegisterRequest, User } from '../types/auth';
+import apiService from './api';
+import type { AuthResponse, LoginRequest, RegisterRequest, UserProfile } from '../types/auth';
 
-export class AuthService {
+class AuthService {
   async login(credentials: LoginRequest): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
-    
-    // Store tokens in localStorage
-    localStorage.setItem('accessToken', response.accessToken);
-    localStorage.setItem('refreshToken', response.refreshToken);
-    
-    return response;
+    return apiService.post<AuthResponse>('/auth/login', credentials);
   }
 
   async register(userData: RegisterRequest): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/auth/register', userData);
-    
-    // Store tokens in localStorage
-    localStorage.setItem('accessToken', response.accessToken);
-    localStorage.setItem('refreshToken', response.refreshToken);
-    
-    return response;
+    return apiService.post<AuthResponse>('/auth/register', userData);
+  }
+
+  async refreshToken(refreshToken: string): Promise<{ accessToken: string }> {
+    return apiService.post<{ accessToken: string }>('/auth/refresh', { refreshToken });
+  }
+
+  async getUserProfile(): Promise<UserProfile> {
+    return apiService.get<UserProfile>('/auth/me');
   }
 
   async logout(): Promise<void> {
-    try {
-      await apiClient.post('/auth/logout');
-    } catch (error) {
-      // Continue with logout even if API call fails
-      console.error('Logout API call failed:', error);
-    } finally {
-      // Always clear local storage
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+    await apiService.post('/auth/logout');
+  }
+
+  // OAuth 로그인 메서드들
+  loginWithGoogle(): void {
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+    window.location.href = `${baseUrl}/auth/google`;
+  }
+
+  loginWithGitHub(): void {
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+    window.location.href = `${baseUrl}/auth/github`;
+  }
+
+  // OAuth 콜백 처리 (URL에서 토큰 추출)
+  handleOAuthCallback(): { accessToken?: string; refreshToken?: string; error?: string } {
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessToken = urlParams.get('token');
+    const refreshToken = urlParams.get('refreshToken');
+    const error = urlParams.get('error');
+
+    if (error) {
+      return { error: decodeURIComponent(error) };
     }
-  }
 
-  async getProfile(): Promise<User> {
-    return apiClient.get<User>('/auth/profile');
-  }
+    if (accessToken && refreshToken) {
+      // URL에서 토큰 파라미터 제거
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return { accessToken, refreshToken };
+    }
 
-  async updateProfile(userData: Partial<User>): Promise<User> {
-    return apiClient.patch<User>('/users/profile', userData);
-  }
-
-  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
-    await apiClient.patch('/users/password', {
-      currentPassword,
-      newPassword,
-    });
-  }
-
-  isAuthenticated(): boolean {
-    const token = localStorage.getItem('accessToken');
-    return !!token;
-  }
-
-  getAccessToken(): string | null {
-    return localStorage.getItem('accessToken');
-  }
-
-  clearTokens(): void {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    return {};
   }
 }
 
-export const authService = new AuthService(); 
+export const authService = new AuthService();
+export default authService; 

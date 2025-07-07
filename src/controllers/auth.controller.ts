@@ -28,7 +28,7 @@ export class AuthController {
     }
   }
 
-  async login(req: Request, res: Response) {
+  async login(req: Request, res: Response): Promise<void> {
     try {
       const data: LoginRequest = req.body;
       const result = await authService.login(data);
@@ -44,10 +44,33 @@ export class AuthController {
     }
   }
 
-  async logout(req: Request, res: Response) {
+  async refreshToken(req: Request, res: Response): Promise<void> {
+    try {
+      const { refreshToken } = req.body;
+      
+      if (!refreshToken) {
+        res.status(400).json({ error: '리프레시 토큰이 필요합니다.' });
+        return;
+      }
+
+      const result = await authService.refreshToken(refreshToken);
+      
+      res.json({
+        message: '토큰이 갱신되었습니다.',
+        data: result,
+      });
+    } catch (error) {
+      res.status(401).json({
+        error: error instanceof Error ? error.message : '토큰 갱신에 실패했습니다.',
+      });
+    }
+  }
+
+  async logout(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: '인증이 필요합니다.' });
+        res.status(401).json({ error: '인증이 필요합니다.' });
+        return;
       }
 
       await authService.logout(req.user.id);
@@ -62,10 +85,11 @@ export class AuthController {
     }
   }
 
-  async getProfile(req: Request, res: Response) {
+  async getProfile(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: '인증이 필요합니다.' });
+        res.status(401).json({ error: '인증이 필요합니다.' });
+        return;
       }
 
       res.json({

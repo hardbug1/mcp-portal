@@ -6,85 +6,121 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { config } from './config/env.js';
-import { apiLimiter } from './middleware/rate-limit.middleware.js';
-import authRoutes from './routes/auth.routes.js';
-import userRoutes from './routes/user.routes.js';
-import workflowRoutes from './routes/workflow.routes.js';
-import nodeRoutes from './routes/node.routes.js';
-import connectionRoutes from './routes/connection.routes.js';
-import credentialRoutes from './routes/credential.routes.js';
-import mcpRoutes from './routes/mcp.routes.js';
+import compression from 'compression';
+import rateLimit from 'express-rate-limit';
+import passport from 'passport';
+import session from 'express-session';
+import { config } from './config/env';
+import './config/passport'; // Passport 설정 로드
+
+// Route imports
+import authRoutes from './routes/auth.routes';
+import userRoutes from './routes/user.routes';
+import workflowRoutes from './routes/workflow.routes';
+import nodeRoutes from './routes/node.routes';
+import connectionRoutes from './routes/connection.routes';
+import credentialRoutes from './routes/credential.routes';
+import mcpRoutes from './routes/mcp.routes';
+import deploymentRoutes from './routes/deployment.routes';
 
 const app = express();
 
-// 보안 미들웨어
+// Security middleware
 app.use(helmet());
-
-// CORS 설정
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-domain.com'] 
-    : ['http://localhost:3000', 'http://localhost:3001'],
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,
 }));
 
-// 기본 미들웨어
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
-
 // Rate limiting
-app.use('/api', apiLimiter);
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+});
+app.use('/api/', limiter);
 
-// Health check
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(compression());
+
+// Session configuration for OAuth
+app.use(session({
+  secret: config.jwtSecret,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: config.nodeEnv === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  },
+}));
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Routes - connection과 node 제외하고 테스트
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/workflows', workflowRoutes);
+app.use('/api/workflows', connectionRoutes); // connection은 workflow의 하위 리소스
+app.use('/api/nodes', nodeRoutes); // 노드 템플릿 관련
+app.use('/api/credentials', credentialRoutes);
+app.use('/api/mcp', mcpRoutes);
+app.use('/api/deployment', deploymentRoutes);
+
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ 
-    status: 'ok', 
+    status: 'healthy', 
     timestamp: new Date().toISOString(),
     version: process.env.npm_package_version || '1.0.0'
   });
 });
 
-// API 라우트
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/credentials', credentialRoutes);
-app.use('/api/workflows', workflowRoutes);
-app.use('/api/nodes', nodeRoutes);
-app.use('/api/workflows', connectionRoutes);
-app.use('/api/mcp', mcpRoutes);
-
-// 404 핸들러
-app.use('*', (req, res) => {
-  res.status(404).json({ error: '요청하신 리소스를 찾을 수 없습니다.' });
-});
-
-// 전역 에러 핸들러
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+// Error handling middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Error:', err);
   
+  if (err.name === 'ValidationError') {
+    res.status(400).json({
+      error: 'Validation failed',
+      details: err.message,
+    });
+    return;
+  }
+  
+  if (err.name === 'UnauthorizedError') {
+    res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Invalid token',
+    });
+    return;
+  }
+  
   res.status(500).json({
-    error: process.env.NODE_ENV === 'production' 
-      ? '서버 오류가 발생했습니다.' 
-      : err.message,
+    error: 'Internal server error',
+    message: config.nodeEnv === 'development' ? err.message : 'Something went wrong',
   });
 });
 
-// 테스트 환경이 아닐 때만 서버 시작
-if (process.env.NODE_ENV !== 'test') {
-  const PORT = config.port;
-  
-  app.listen(PORT, () => {
-    console.log(`🚀 서버가 포트 ${PORT}에서 실행 중입니다.`);
-    console.log(`📊 Health check: http://localhost:${PORT}/health`);
-    console.log(`🔑 Auth API: http://localhost:${PORT}/api/auth`);
-    console.log(`👤 User API: http://localhost:${PORT}/api/users`);
-    console.log(`🔐 Credential API: http://localhost:${PORT}/api/credentials`);
-    console.log(`📋 Workflow API: http://localhost:${PORT}/api/workflows`);
-    console.log(`🔗 Node API: http://localhost:${PORT}/api/nodes`);
-    console.log(`🔌 Connection API: http://localhost:${PORT}/api/workflows/:workflowId/connections`);
-    console.log(`🤖 MCP API: http://localhost:${PORT}/api/mcp`);
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: `Route ${req.originalUrl} not found`,
   });
-}
+});
+
+const PORT = config.port;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 Environment: ${config.nodeEnv}`);
+  console.log(`🔗 API URL: http://localhost:${PORT}/api`);
+  console.log(`🩺 Health check: http://localhost:${PORT}/health`);
+});
 
 export default app; 

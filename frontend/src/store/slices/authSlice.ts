@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { AuthState, User, LoginRequest, RegisterRequest } from '../../types/auth';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
+import type { AuthState, UserProfile, LoginRequest, RegisterRequest } from '../../types/auth';
 import { authService } from '../../services/authService';
 
 const initialState: AuthState = {
@@ -39,10 +40,42 @@ export const loadUserProfile = createAsyncThunk(
   'auth/loadProfile',
   async (_, { rejectWithValue }) => {
     try {
-      const user = await authService.getProfile();
+      const user = await authService.getUserProfile();
       return user;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load profile');
+    }
+  }
+);
+
+// OAuth 콜백 처리
+export const handleOAuthCallback = createAsyncThunk(
+  'auth/oauthCallback',
+  async (_, { rejectWithValue }) => {
+    try {
+      const result = authService.handleOAuthCallback();
+      
+      if (result.error) {
+        return rejectWithValue(result.error);
+      }
+      
+      if (result.accessToken && result.refreshToken) {
+        // 토큰을 localStorage에 저장
+        localStorage.setItem('accessToken', result.accessToken);
+        localStorage.setItem('refreshToken', result.refreshToken);
+        
+        // 사용자 프로필 로드
+        const user = await authService.getUserProfile();
+        return { 
+          user, 
+          accessToken: result.accessToken, 
+          refreshToken: result.refreshToken 
+        };
+      }
+      
+      return rejectWithValue('OAuth callback failed: No tokens received');
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'OAuth callback failed');
     }
   }
 );
@@ -65,7 +98,7 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
-    setUser: (state, action: PayloadAction<User>) => {
+    setUser: (state, action: PayloadAction<UserProfile>) => {
       state.user = action.payload;
     },
     clearAuth: (state) => {
@@ -125,7 +158,8 @@ const authSlice = createSlice({
         state.error = action.payload as string;
         state.isAuthenticated = false;
         state.accessToken = null;
-        authService.clearTokens();
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
       })
       // Logout
       .addCase(logoutUser.fulfilled, (state) => {
@@ -133,6 +167,25 @@ const authSlice = createSlice({
         state.accessToken = null;
         state.isAuthenticated = false;
         state.error = null;
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+      })
+      // OAuth Callback
+      .addCase(handleOAuthCallback.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(handleOAuthCallback.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
+        state.accessToken = action.payload.accessToken;
+        state.isAuthenticated = true;
+        state.error = null;
+      })
+      .addCase(handleOAuthCallback.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+        state.isAuthenticated = false;
       });
   },
 });

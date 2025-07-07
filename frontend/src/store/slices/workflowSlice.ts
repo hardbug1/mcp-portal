@@ -1,18 +1,23 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Workflow } from '../../types/workflow';
-import { apiClient } from '../../services/api';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
+import type { Workflow } from '../../types/workflow';
+import { workflowService, type WorkflowStats, type DashboardData } from '../../services/workflowService';
 
 interface WorkflowState {
   workflows: Workflow[];
   currentWorkflow: Workflow | null;
+  dashboardData: DashboardData | null;
   isLoading: boolean;
+  isDashboardLoading: boolean;
   error: string | null;
 }
 
 const initialState: WorkflowState = {
   workflows: [],
   currentWorkflow: null,
+  dashboardData: null,
   isLoading: false,
+  isDashboardLoading: false,
   error: null,
 };
 
@@ -21,10 +26,22 @@ export const fetchWorkflows = createAsyncThunk(
   'workflow/fetchWorkflows',
   async (_, { rejectWithValue }) => {
     try {
-      const workflows = await apiClient.get<Workflow[]>('/workflows');
+      const workflows = await workflowService.getWorkflows();
       return workflows;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch workflows');
+    }
+  }
+);
+
+export const fetchDashboardData = createAsyncThunk(
+  'workflow/fetchDashboardData',
+  async (_, { rejectWithValue }) => {
+    try {
+      const dashboardData = await workflowService.getDashboardData();
+      return dashboardData;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch dashboard data');
     }
   }
 );
@@ -52,6 +69,19 @@ const workflowSlice = createSlice({
       })
       .addCase(fetchWorkflows.rejected, (state, action) => {
         state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      // Dashboard data
+      .addCase(fetchDashboardData.pending, (state) => {
+        state.isDashboardLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchDashboardData.fulfilled, (state, action) => {
+        state.isDashboardLoading = false;
+        state.dashboardData = action.payload;
+      })
+      .addCase(fetchDashboardData.rejected, (state, action) => {
+        state.isDashboardLoading = false;
         state.error = action.payload as string;
       });
   },

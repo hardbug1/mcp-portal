@@ -1,25 +1,20 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
+import { errorHandler } from '../utils/errorHandler';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-
-class ApiClient {
-  private client: AxiosInstance;
+class ApiService {
+  private api: AxiosInstance;
 
   constructor() {
-    this.client = axios.create({
-      baseURL: API_BASE_URL,
-      timeout: 10000,
+    this.api = axios.create({
+      baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
       headers: {
         'Content-Type': 'application/json',
       },
+      timeout: 30000, // 30초 타임아웃
     });
 
-    this.setupInterceptors();
-  }
-
-  private setupInterceptors() {
     // Request interceptor to add auth token
-    this.client.interceptors.request.use(
+    this.api.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem('accessToken');
         if (token) {
@@ -27,72 +22,70 @@ class ApiClient {
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => {
+        const appError = errorHandler.handleError(error, 'API Request');
+        return Promise.reject(appError);
+      }
     );
 
-    // Response interceptor to handle token refresh
-    this.client.interceptors.response.use(
+    // Response interceptor to handle token refresh and errors
+    this.api.interceptors.response.use(
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
-
+        
+        // 토큰 갱신 처리
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-
+          
           try {
             const refreshToken = localStorage.getItem('refreshToken');
-            if (!refreshToken) {
-              throw new Error('No refresh token');
+            if (refreshToken) {
+              const response = await axios.post(`${this.api.defaults.baseURL}/auth/refresh`, {
+                refreshToken,
+              });
+              
+              const { accessToken } = response.data;
+              localStorage.setItem('accessToken', accessToken);
+              
+              originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+              return this.api(originalRequest);
             }
-
-            const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-              refreshToken,
-            });
-
-            const { accessToken } = response.data;
-            localStorage.setItem('accessToken', accessToken);
-
-            // Retry the original request
-            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-            return this.client(originalRequest);
           } catch (refreshError) {
-            // Refresh failed, redirect to login
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             window.location.href = '/login';
-            return Promise.reject(refreshError);
+            return Promise.reject(errorHandler.handleError(refreshError, 'Token Refresh'));
           }
         }
-
-        return Promise.reject(error);
+        
+        // 에러 핸들링
+        const appError = errorHandler.handleError(error, 'API Response');
+        return Promise.reject(appError);
       }
     );
   }
 
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.get(url, config);
+    const response = await this.api.get<T>(url, config);
     return response.data;
   }
 
   async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.post(url, data, config);
+    const response = await this.api.post<T>(url, data, config);
     return response.data;
   }
 
   async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.put(url, data, config);
-    return response.data;
-  }
-
-  async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.patch(url, data, config);
+    const response = await this.api.put<T>(url, data, config);
     return response.data;
   }
 
   async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.delete(url, config);
+    const response = await this.api.delete<T>(url, config);
     return response.data;
   }
 }
 
-export const apiClient = new ApiClient(); 
+export const apiService = new ApiService();
+export default apiService; 

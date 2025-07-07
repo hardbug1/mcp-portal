@@ -19,8 +19,11 @@ export interface WorkflowDefinition {
 export interface WorkflowNode {
   id: string;
   type: NodeType;
+  name?: string;
   position: { x: number; y: number };
-  data: Record<string, any>;
+  data?: Record<string, any>;
+  config?: Record<string, any>;
+  status?: 'idle' | 'running' | 'success' | 'error';
   inputs?: PortDefinition[];
   outputs?: PortDefinition[];
 }
@@ -28,9 +31,9 @@ export interface WorkflowNode {
 export interface WorkflowConnection {
   id: string;
   sourceNodeId: string;
-  sourcePort: string;
   targetNodeId: string;
-  targetPort: string;
+  sourceHandle?: string;
+  targetHandle?: string;
 }
 
 export interface PortDefinition {

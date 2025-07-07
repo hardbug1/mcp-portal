@@ -1,24 +1,22 @@
 import { User } from '@prisma/client';
 
+declare global {
+  namespace Express {
+    interface Request {
+      user?: User;
+      workspaceRole?: string;
+    }
+  }
+}
+
 export interface AuthenticatedUser {
   id: string;
   email: string;
   name: string;
-  avatarUrl?: string | null;
-  emailVerified: boolean;
+  role: string;
+  avatar?: string;
+  isEmailVerified: boolean;
+  lastLoginAt?: Date;
   createdAt: Date;
   updatedAt: Date;
-}
-
-declare global {
-  namespace Express {
-    interface Request {
-      user?: AuthenticatedUser;
-      workspace?: {
-        id: string;
-        role: string;
-        permissions: Record<string, boolean>;
-      };
-    }
-  }
 } 

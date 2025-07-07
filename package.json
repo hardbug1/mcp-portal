@@ -76,21 +76,28 @@
     "supertest": "^7.1.1",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.3",
     "typescript": "^5.7.2"
   },
   "dependencies": {
     "@prisma/client": "^6.11.0",
+    "@types/compression": "^1.8.1",
+    "@types/express-session": "^1.18.2",
+    "@types/passport-jwt": "^4.0.1",
     "bcryptjs": "^3.0.2",
+    "compression": "^1.8.0",
     "cors": "^2.8.5",
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "express-rate-limit": "^7.5.1",
+    "express-session": "^1.18.1",
     "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
+    "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "prisma": "^6.11.0"
   }
